@@ -173,17 +173,26 @@ async function refreshToken(token) {
         const token = await authenticate(initData);
         await getClaim(token);
       } catch (error) {
-        const token = await authenticate(initData);
-        await refreshToken(token)
-
+        console.error('Error during getClaim:', error);
+        try {
+          const token = await authenticate(initData);
+          await refreshToken(token);
+        } catch (error) {
+          console.error('Error during refreshToken:', error);
+        }
       }
     });
 
     await Promise.all(tasks);
   } catch (error) {
-    const token = await authenticate(initData);
-    refreshToken(token)
-    await Promise.all(tasks);
     console.error('Error in main flow:', error);
+    exec('node index.js', (err, stdout, stderr) => {
+      if (err) {
+        console.error(`Exec error: ${err}`);
+        return;
+      }
+      console.log(`Stdout: ${stdout}`);
+      console.error(`Stderr: ${stderr}`);
+    });
   }
 })();
